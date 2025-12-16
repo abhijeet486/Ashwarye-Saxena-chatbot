@@ -23,3 +23,5 @@ client_secret_870607426270-r1pffu3u6mq085711s2a9o4r3o896hmt.apps.googleuserconte
 env_values.txt
 ragllmtrytest-e3bb2e1e3ce4.json
 get_unstr_query2.py
+venv/
+*.pyc

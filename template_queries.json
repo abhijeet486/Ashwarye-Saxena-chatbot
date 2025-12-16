@@ -1,0 +1,100 @@
+{
+  "templates": [
+    {
+      "id": "service_inquiry",
+      "name": "Service Inquiry",
+      "query": "What services are available at MSPSDC?",
+      "query_type": "informational",
+      "description": "General inquiry about available services",
+      "category": "general"
+    },
+    {
+      "id": "complaint_process",
+      "name": "Complaint Process",
+      "query": "How do I file a complaint with MSPSDC?",
+      "query_type": "procedural",
+      "description": "Query about the complaint filing process",
+      "category": "complaints"
+    },
+    {
+      "id": "contact_info",
+      "name": "Contact Information",
+      "query": "What is the contact information for MSPSDC?",
+      "query_type": "factual",
+      "description": "Query for contact details",
+      "category": "contact"
+    },
+    {
+      "id": "eligibility",
+      "name": "Eligibility Criteria",
+      "query": "What are the eligibility criteria for MSPSDC services?",
+      "query_type": "procedural",
+      "description": "Query about service eligibility",
+      "category": "requirements"
+    },
+    {
+      "id": "documentation",
+      "name": "Documentation Requirements",
+      "query": "What documents are required to apply for services?",
+      "query_type": "informational",
+      "description": "Query about required documentation",
+      "category": "requirements"
+    },
+    {
+      "id": "application_status",
+      "name": "Application Status",
+      "query": "How can I check the status of my application?",
+      "query_type": "procedural",
+      "description": "Query about checking application status",
+      "category": "status"
+    },
+    {
+      "id": "processing_time",
+      "name": "Processing Time",
+      "query": "How long does it take to process an application?",
+      "query_type": "informational",
+      "description": "Query about application processing duration",
+      "category": "timeline"
+    },
+    {
+      "id": "appeals_process",
+      "name": "Appeals Process",
+      "query": "What is the appeals process if my application is rejected?",
+      "query_type": "procedural",
+      "description": "Query about the appeals mechanism",
+      "category": "complaints"
+    },
+    {
+      "id": "online_services",
+      "name": "Online Services",
+      "query": "What online services are available?",
+      "query_type": "informational",
+      "description": "Query about online service options",
+      "category": "services"
+    },
+    {
+      "id": "fee_structure",
+      "name": "Fee Structure",
+      "query": "What are the fees for applying for services?",
+      "query_type": "factual",
+      "description": "Query about service fees and charges",
+      "category": "financial"
+    }
+  ],
+  "categories": [
+    "general",
+    "complaints",
+    "contact",
+    "requirements",
+    "status",
+    "timeline",
+    "services",
+    "financial"
+  ],
+  "query_types": [
+    "informational",
+    "procedural",
+    "factual",
+    "technical"
+  ]
+}

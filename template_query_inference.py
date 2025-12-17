@@ -10,7 +10,7 @@ import requests
 import json
 import time
 from typing import Dict, List, Any
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 # Configuration
 LLM_ENDPOINT = "http://localhost:5000/query/"

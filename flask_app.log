@@ -1,0 +1,18 @@
+2025-12-17 17:04:59,660 - root - INFO - Flask app started
+ * Serving Flask app 'app'
+ * Debug mode: off
+2025-12-17 17:04:59,664 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.16.94.178:8000
+2025-12-17 17:04:59,664 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-17 17:05:17,792 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:05:17] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-17 17:05:32,037 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:05:32] "GET / HTTP/1.1" 200 -
+2025-12-17 17:06:33,183 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:33] "GET /api/health HTTP/1.1" 200 -
+2025-12-17 17:06:33,189 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:33] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-17 17:06:34,193 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:34] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-17 17:06:35,199 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:35] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-17 17:06:36,204 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:36] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-17 17:06:37,210 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:37] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-17 17:06:38,215 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:38] "GET /api/chat/history HTTP/1.1" 200 -
+2025-12-17 17:06:38,218 - werkzeug - INFO - 127.0.0.1 - - [17/Dec/2025 17:06:38] "POST /api/chat/clear HTTP/1.1" 200 -

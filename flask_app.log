@@ -1,21 +1,29 @@
-2025-12-18 10:51:05,637 - root - INFO - Flask app started
+2025-12-18 12:34:45,101 - root - INFO - Flask app started
  * Serving Flask app 'app'
  * Debug mode: off
-2025-12-18 10:51:05,641 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-12-18 12:34:45,107 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8000
- * Running on http://10.16.2.49:8000
-2025-12-18 10:51:05,641 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
-2025-12-18 10:51:15,826 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:51:15] "GET /api/health HTTP/1.1" 200 -
-2025-12-18 10:51:30,782 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:51:30] "GET /api/llm/status HTTP/1.1" 200 -
-2025-12-18 10:52:47,700 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "GET /api/health HTTP/1.1" 200 -
-2025-12-18 10:52:47,705 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "GET /api/llm/status HTTP/1.1" 200 -
-2025-12-18 10:52:47,707 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "POST /api/mode/demo HTTP/1.1" 200 -
-2025-12-18 10:52:47,711 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "POST /api/chat/send HTTP/1.1" 200 -
-2025-12-18 10:52:48,716 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:48] "POST /api/chat/send HTTP/1.1" 200 -
-2025-12-18 10:52:49,720 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:49] "POST /api/chat/send HTTP/1.1" 200 -
-2025-12-18 10:52:50,726 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:50] "POST /api/chat/send HTTP/1.1" 200 -
-2025-12-18 10:52:51,732 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:51] "GET /api/llm/status HTTP/1.1" 200 -
-2025-12-18 10:52:51,736 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:51] "[35m[1mPOST /api/mode/enhanced HTTP/1.1[0m" 503 -
-2025-12-18 10:53:42,193 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:53:42] "POST /api/chat/send HTTP/1.1" 200 -
-2025-12-18 10:53:59,303 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:53:59] "GET /api/llm/status HTTP/1.1" 200 -
+ * Running on http://10.16.96.67:8000
+2025-12-18 12:34:45,107 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-18 12:34:58,500 - root - WARNING - Ollama availability check failed: HTTPConnectionPool(host='127.0.0.1', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f21887acb90>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-12-18 12:34:58,501 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:34:58] "GET /api/health HTTP/1.1" 200 -
+2025-12-18 12:35:13,330 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:13] "GET /api/health HTTP/1.1" 200 -
+2025-12-18 12:35:13,336 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:13] "GET /api/llm/status HTTP/1.1" 200 -
+2025-12-18 12:35:13,342 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:13] "GET /api/ollama/setup HTTP/1.1" 200 -
+2025-12-18 12:35:13,349 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:13] "GET /api/health HTTP/1.1" 200 -
+2025-12-18 12:35:13,352 - root - INFO - Using demo fallback response
+2025-12-18 12:35:13,353 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:13] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 12:35:14,357 - root - INFO - Using demo fallback response
+2025-12-18 12:35:14,358 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:14] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 12:35:15,362 - root - INFO - Using demo fallback response
+2025-12-18 12:35:15,363 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:15] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 12:35:29,988 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:29] "GET /api/ollama/setup HTTP/1.1" 200 -
+2025-12-18 12:35:41,616 - root - WARNING - Ollama availability check failed: HTTPConnectionPool(host='127.0.0.1', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f21887aec30>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-12-18 12:35:41,617 - root - INFO - Using demo fallback response
+2025-12-18 12:35:41,619 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:35:41] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 12:36:52,051 - root - WARNING - Ollama availability check failed: HTTPConnectionPool(host='127.0.0.1', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f21887aec90>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-12-18 12:36:52,051 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:36:52] "GET /api/llm/status HTTP/1.1" 200 -
+2025-12-18 12:37:50,618 - root - WARNING - Ollama availability check failed: HTTPConnectionPool(host='127.0.0.1', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f21887ad760>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-12-18 12:37:50,619 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:37:50] "GET /api/health HTTP/1.1" 200 -
+2025-12-18 12:38:09,146 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 12:38:09] "GET /api/ollama/setup HTTP/1.1" 200 -

@@ -377,6 +377,12 @@
             color: #0c5460;
         }
 
+        .mode-local-ai {
+            background: #e8f4fd;
+            color: #0c5460;
+            border: 1px solid #b3d7ff;
+        }
+
         .mode-switch {
             margin-left: 8px;
         }
@@ -639,25 +645,66 @@
                 const switchToEnhanced = document.getElementById('switchToEnhanced');
                 const switchToDemo = document.getElementById('switchToDemo');
                 
-                if (data.enhanced_mode) {
-                    modeBadge.textContent = 'Enhanced';
-                    modeBadge.className = 'mode-badge mode-enhanced';
+                // Determine mode and service status
+                let modeText = 'Demo';
+                let modeClass = 'mode-demo';
+                let enhancedAvailable = false;
+                let serviceInfo = '';
+                
+                if (data.active_service === 'main_llm') {
+                    modeText = 'Enhanced';
+                    modeClass = 'mode-enhanced';
+                    enhancedAvailable = true;
+                    serviceInfo = 'Using Main LLM Service';
+                } else if (data.active_service === 'local_llm') {
+                    modeText = 'Local AI';
+                    modeClass = 'mode-enhanced';
+                    enhancedAvailable = true;
+                    serviceInfo = `Using ${data.services.local_llm.model || 'LLaMA3'} locally`;
+                } else {
+                    modeText = 'Demo';
+                    modeClass = 'mode-demo';
+                    enhancedAvailable = false;
+                    serviceInfo = 'Using predefined responses';
+                }
+                
+                modeBadge.textContent = modeText;
+                modeBadge.className = `mode-badge ${modeClass}`;
+                
+                // Update button visibility
+                if (enhancedAvailable) {
                     switchToDemo.style.display = 'inline-block';
                     switchToEnhanced.style.display = 'none';
                 } else {
-                    modeBadge.textContent = 'Demo';
-                    modeBadge.className = 'mode-badge mode-demo';
                     switchToDemo.style.display = 'none';
                     switchToEnhanced.style.display = 'inline-block';
                 }
                 
-                // Check LLM service status
-                if (data.llm_service && data.llm_service.available) {
-                    switchToEnhanced.disabled = false;
-                    switchToEnhanced.title = 'Switch to Enhanced Mode with AI responses';
-                } else {
+                // Update button states
+                if (enhancedAvailable) {
                     switchToEnhanced.disabled = true;
-                    switchToEnhanced.title = 'LLM service not available';
+                    switchToEnhanced.title = serviceInfo + ' - Already active';
+                    switchToDemo.disabled = false;
+                    switchToDemo.title = 'Switch to Demo Mode';
+                } else {
+                    // Check if any LLM service is available for switching
+                    const hasMainLLM = data.services.main_llm && data.services.main_llm.available;
+                    const hasLocalLLM = data.services.local_llm && data.services.local_llm.available;
+                    const anyAvailable = hasMainLLM || hasLocalLLM;
+                    
+                    if (anyAvailable) {
+                        switchToEnhanced.disabled = false;
+                        if (hasLocalLLM && !hasMainLLM) {
+                            switchToEnhanced.title = 'Switch to Enhanced Mode with Local LLaMA3';
+                        } else {
+                            switchToEnhanced.title = 'Switch to Enhanced Mode with AI responses';
+                        }
+                    } else {
+                        switchToEnhanced.disabled = true;
+                        switchToEnhanced.title = 'No LLM service available - Install Ollama with LLaMA3 for enhanced responses';
+                    }
+                    switchToDemo.disabled = true;
+                    switchToDemo.title = 'Already in Demo Mode';
                 }
                 
             } catch (error) {

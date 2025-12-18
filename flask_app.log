@@ -1,14 +1,21 @@
-2025-12-18 10:17:45,915 - root - INFO - Flask app started
+2025-12-18 10:51:05,637 - root - INFO - Flask app started
  * Serving Flask app 'app'
  * Debug mode: off
-2025-12-18 10:17:45,920 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-12-18 10:51:05,641 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8000
- * Running on http://10.16.13.171:8000
-2025-12-18 10:17:45,920 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
-2025-12-18 10:18:06,541 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:18:06] "GET /api/health HTTP/1.1" 200 -
-2025-12-18 10:18:41,724 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:18:41] "POST /api/chat/send HTTP/1.1" 200 -
-2025-12-18 10:19:21,621 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:19:21] "GET /api/health HTTP/1.1" 200 -
-2025-12-18 10:20:20,319 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:20:20] "HEAD / HTTP/1.1" 200 -
-2025-12-18 10:20:29,714 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:20:29] "GET / HTTP/1.1" 200 -
-2025-12-18 10:20:41,228 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:20:41] "POST /api/chat/send HTTP/1.1" 200 -
+ * Running on http://10.16.2.49:8000
+2025-12-18 10:51:05,641 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-18 10:51:15,826 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:51:15] "GET /api/health HTTP/1.1" 200 -
+2025-12-18 10:51:30,782 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:51:30] "GET /api/llm/status HTTP/1.1" 200 -
+2025-12-18 10:52:47,700 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "GET /api/health HTTP/1.1" 200 -
+2025-12-18 10:52:47,705 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "GET /api/llm/status HTTP/1.1" 200 -
+2025-12-18 10:52:47,707 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "POST /api/mode/demo HTTP/1.1" 200 -
+2025-12-18 10:52:47,711 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:47] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 10:52:48,716 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:48] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 10:52:49,720 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:49] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 10:52:50,726 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:50] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 10:52:51,732 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:51] "GET /api/llm/status HTTP/1.1" 200 -
+2025-12-18 10:52:51,736 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:52:51] "[35m[1mPOST /api/mode/enhanced HTTP/1.1[0m" 503 -
+2025-12-18 10:53:42,193 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:53:42] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-18 10:53:59,303 - werkzeug - INFO - 127.0.0.1 - - [18/Dec/2025 10:53:59] "GET /api/llm/status HTTP/1.1" 200 -

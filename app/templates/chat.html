@@ -351,6 +351,68 @@
             margin-bottom: 16px;
             font-size: 12px;
         }
+
+        .mode-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .mode-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .mode-demo {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .mode-enhanced {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .mode-switch {
+            margin-left: 8px;
+        }
+
+        .mode-switch button {
+            padding: 4px 8px;
+            border: 1px solid #25D366;
+            background: transparent;
+            color: #25D366;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-switch button:hover {
+            background: #25D366;
+            color: white;
+        }
+
+        .mode-switch button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message.system .message-avatar {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+
+        .message.system .message-content {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #e1e5e9;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -365,6 +427,13 @@
             <div class="status-indicator">
                 <div class="status-dot"></div>
                 <span>Online</span>
+                <div class="mode-indicator">
+                    <div id="modeBadge" class="mode-badge mode-demo">Demo</div>
+                    <div class="mode-switch">
+                        <button id="switchToEnhanced" onclick="switchToEnhancedMode()">Enhanced</button>
+                        <button id="switchToDemo" onclick="switchToDemoMode()">Demo</button>
+                    </div>
+                </div>
                 <button class="clear-button" onclick="clearChat()">
                     <i class="fas fa-trash"></i> Clear
                 </button>
@@ -499,27 +568,6 @@
             }
         }
 
-        function addMessageToChat(message, type, timestamp = null) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            const time = timestamp ? new Date(timestamp) : new Date();
-            const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            messageDiv.innerHTML = `
-                <div class="message-avatar">
-                    <i class="fas ${type === 'user' ? 'fa-user' : 'fa-robot'}"></i>
-                </div>
-                <div class="message-content">
-                    <div>${message}</div>
-                    <div class="message-time">${timeString}</div>
-                </div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-        }
-
         function showTypingIndicator() {
             document.getElementById('typingIndicator').style.display = 'block';
             scrollToBottom();
@@ -579,7 +627,120 @@
         // Auto-focus input on page load
         window.addEventListener('load', function() {
             messageInput.focus();
+            loadModeStatus();
         });
+
+        async function loadModeStatus() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                const modeBadge = document.getElementById('modeBadge');
+                const switchToEnhanced = document.getElementById('switchToEnhanced');
+                const switchToDemo = document.getElementById('switchToDemo');
+                
+                if (data.enhanced_mode) {
+                    modeBadge.textContent = 'Enhanced';
+                    modeBadge.className = 'mode-badge mode-enhanced';
+                    switchToDemo.style.display = 'inline-block';
+                    switchToEnhanced.style.display = 'none';
+                } else {
+                    modeBadge.textContent = 'Demo';
+                    modeBadge.className = 'mode-badge mode-demo';
+                    switchToDemo.style.display = 'none';
+                    switchToEnhanced.style.display = 'inline-block';
+                }
+                
+                // Check LLM service status
+                if (data.llm_service && data.llm_service.available) {
+                    switchToEnhanced.disabled = false;
+                    switchToEnhanced.title = 'Switch to Enhanced Mode with AI responses';
+                } else {
+                    switchToEnhanced.disabled = true;
+                    switchToEnhanced.title = 'LLM service not available';
+                }
+                
+            } catch (error) {
+                console.error('Error loading mode status:', error);
+            }
+        }
+
+        async function switchToEnhancedMode() {
+            try {
+                const response = await fetch('/api/mode/enhanced', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await loadModeStatus();
+                    // Add a system message about mode change
+                    addMessageToChat('Switched to Enhanced Mode - AI responses enabled!', 'system');
+                } else {
+                    alert('Failed to switch to Enhanced Mode: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error switching to enhanced mode:', error);
+                alert('Error switching to Enhanced Mode');
+            }
+        }
+
+        async function switchToDemoMode() {
+            try {
+                const response = await fetch('/api/mode/demo', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await loadModeStatus();
+                    // Add a system message about mode change
+                    addMessageToChat('Switched to Demo Mode - Predefined responses enabled.', 'system');
+                } else {
+                    alert('Failed to switch to Demo Mode');
+                }
+            } catch (error) {
+                console.error('Error switching to demo mode:', error);
+                alert('Error switching to Demo Mode');
+            }
+        }
+
+        function addMessageToChat(message, type, timestamp = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const time = timestamp ? new Date(timestamp) : new Date();
+            const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let avatarClass = '';
+            let avatarIcon = '';
+            
+            if (type === 'user') {
+                avatarClass = 'user';
+                avatarIcon = 'fa-user';
+            } else if (type === 'bot') {
+                avatarClass = 'bot';
+                avatarIcon = 'fa-robot';
+            } else { // system message
+                avatarClass = 'system';
+                avatarIcon = 'fa-cog';
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${avatarClass}">
+                    <i class="fas ${avatarIcon}"></i>
+                </div>
+                <div class="message-content">
+                    <div>${message}</div>
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+        }
     </script>
 </body>
 </html>

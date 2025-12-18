@@ -6,27 +6,7 @@ If this would cause problems for you,
 please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
         
   import pandas as pd
-/home/engine/project/venv/lib/python3.12/site-packages/langchain/embeddings/__init__.py:29: LangChainDeprecationWarning: Importing embeddings from langchain is deprecated. Importing from langchain will no longer be supported as of langchain==0.2.0. Please import from langchain-community instead:
-
-`from langchain_community.embeddings import SentenceTransformerEmbeddings`.
-
-To install langchain-community run `pip install -U langchain-community`.
-  warnings.warn(
-[nltk_data] Downloading package punkt to /home/engine/nltk_data...
-[nltk_data]   Package punkt is already up-to-date!
-nltk path ['/home/engine/nltk_data', '/home/engine/project/venv/nltk_data', '/home/engine/project/venv/share/nltk_data', '/home/engine/project/venv/lib/nltk_data', '/usr/share/nltk_data', '/usr/local/share/nltk_data', '/usr/lib/nltk_data', '/usr/local/lib/nltk_data']
-new nltk path ['/raid/home/ihub1/nltk_data', '/home/engine/nltk_data', '/home/engine/project/venv/nltk_data', '/home/engine/project/venv/share/nltk_data', '/home/engine/project/venv/lib/nltk_data', '/usr/share/nltk_data', '/usr/local/share/nltk_data', '/usr/lib/nltk_data', '/usr/local/lib/nltk_data', '/raid/home/ihub1/nltk_data']
 Traceback (most recent call last):
-  File "/home/engine/project/venv/lib/python3.12/site-packages/langchain_community/embeddings/huggingface.py", line 59, in __init__
-    import sentence_transformers
-ModuleNotFoundError: No module named 'sentence_transformers'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/home/engine/project/openai_functionality.py", line 46, in <module>
-    embeddings = SentenceTransformerEmbeddings(model_name="BAAI/bge-m3")
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/engine/project/venv/lib/python3.12/site-packages/langchain_community/embeddings/huggingface.py", line 62, in __init__
-    raise ImportError(
-ImportError: Could not import sentence_transformers python package. Please install it with `pip install sentence-transformers`.
+  File "/home/engine/project/openai_functionality.py", line 7, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'

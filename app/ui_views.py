@@ -3,8 +3,14 @@ import logging
 from flask import Blueprint, render_template, request, jsonify, session
 from datetime import datetime
 import random
+import requests
+import os
 
 ui_blueprint = Blueprint("ui", __name__, template_folder="templates")
+
+# Configuration
+LLM_SERVICE_URL = os.getenv('LLM_SERVICE_URL', 'http://127.0.0.1:5000/query/')
+USE_ENHANCED_MODE = os.getenv('USE_ENHANCED_MODE', 'false').lower() == 'true'
 
 # Predefined responses for demo
 DEMO_RESPONSES = {
@@ -53,9 +59,54 @@ def chat_interface():
     """Main chat interface"""
     return render_template('chat.html')
 
+def get_llm_response(query, message_history=None, query_type="general"):
+    """Get response from LLM service with fallback to demo responses"""
+    try:
+        if message_history is None:
+            message_history = []
+        
+        json_message = {
+            "query": query,
+            "message_history": message_history,
+            "query_type": query_type
+        }
+        query_json = json.dumps(json_message)
+        
+        headers = {'Content-Type': 'application/json'}
+        
+        response = requests.post(
+            LLM_SERVICE_URL,
+            data=query_json,
+            headers=headers,
+            timeout=30  # 30 second timeout
+        )
+        
+        if response.status_code == 200:
+            response_data = response.json()
+            return response_data.get('response', 'Sorry, I could not process your request.')
+        else:
+            logging.error(f"LLM service returned status {response.status_code}")
+            return get_fallback_response(query)
+            
+    except requests.exceptions.Timeout:
+        logging.warning("LLM service timed out, using fallback")
+        return get_fallback_response(query)
+    except requests.exceptions.ConnectionError:
+        logging.warning("Could not connect to LLM service, using fallback")
+        return get_fallback_response(query)
+    except Exception as e:
+        logging.error(f"Error calling LLM service: {e}")
+        return get_fallback_response(query)
+
+def get_fallback_response(query):
+    """Get demo response as fallback"""
+    category = categorize_query(query)
+    responses = DEMO_RESPONSES.get(category, DEMO_RESPONSES['default'])
+    return random.choice(responses)
+
 @ui_blueprint.route('/api/chat/send', methods=['POST'])
 def send_message():
-    """Handle chat message sending with demo responses"""
+    """Handle chat message sending with enhanced or demo responses"""
     try:
         data = request.get_json()
         message = data.get('message', '').strip()
@@ -79,10 +130,13 @@ def send_message():
             'timestamp': datetime.now().isoformat()
         })
         
-        # Generate demo response
-        category = categorize_query(message)
-        responses = DEMO_RESPONSES.get(category, DEMO_RESPONSES['default'])
-        bot_response = random.choice(responses)
+        # Get response (LLM if enhanced mode enabled, otherwise demo)
+        if USE_ENHANCED_MODE:
+            # Try LLM service first, fallback to demo if fails
+            bot_response = get_llm_response(message, chat_history[:-1])
+        else:
+            # Use demo response
+            bot_response = get_fallback_response(message)
         
         # Add bot response to history
         chat_history.append({
@@ -128,12 +182,69 @@ def clear_chat():
         logging.error(f"Error in clear_chat: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+def check_llm_service():
+    """Check if LLM service is available"""
+    try:
+        response = requests.get('http://127.0.0.1:5000/', timeout=5)
+        return True
+    except:
+        return False
+
 @ui_blueprint.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
+    llm_available = check_llm_service()
+    
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'service': 'WhatsApp Chat UI Demo',
-        'mode': 'demo'
+        'service': 'WhatsApp Chat UI',
+        'mode': 'enhanced' if USE_ENHANCED_MODE else 'demo',
+        'llm_service': {
+            'available': llm_available,
+            'url': LLM_SERVICE_URL
+        },
+        'enhanced_mode': USE_ENHANCED_MODE
     })
+
+@ui_blueprint.route('/api/llm/status', methods=['GET'])
+def llm_status():
+    """Check LLM service status"""
+    llm_available = check_llm_service()
+    
+    if llm_available:
+        try:
+            test_response = requests.post(
+                LLM_SERVICE_URL,
+                json={"query": "hello", "query_type": "greeting"},
+                timeout=10
+            )
+            test_ok = test_response.status_code == 200
+        except:
+            test_ok = False
+    else:
+        test_ok = False
+    
+    return jsonify({
+        'llm_service_available': llm_available,
+        'llm_service_test': test_ok,
+        'enhanced_mode_enabled': USE_ENHANCED_MODE,
+        'service_url': LLM_SERVICE_URL,
+        'recommendation': 'Enhanced mode ready' if llm_available and test_ok else 'Using demo responses'
+    })
+
+@ui_blueprint.route('/api/mode/demo', methods=['POST'])
+def switch_to_demo():
+    """Switch to demo mode"""
+    os.environ['USE_ENHANCED_MODE'] = 'false'
+    return jsonify({'success': True, 'mode': 'demo', 'message': 'Switched to demo mode'})
+
+@ui_blueprint.route('/api/mode/enhanced', methods=['POST'])
+def switch_to_enhanced():
+    """Switch to enhanced mode (if LLM service is available)"""
+    llm_available = check_llm_service()
+    if not llm_available:
+        return jsonify({'error': 'LLM service not available. Cannot switch to enhanced mode.'}), 503
+    
+    os.environ['USE_ENHANCED_MODE'] = 'true'
+    return jsonify({'success': True, 'mode': 'enhanced', 'message': 'Switched to enhanced mode'})

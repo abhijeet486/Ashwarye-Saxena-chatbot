@@ -3,6 +3,7 @@ from app.config import load_configurations, configure_logging
 from .views import webhook_blueprint
 from .ui_views import ui_blueprint
 from .tasks import make_celery
+from .openapi_docs import api  # Import the Flask-RESTX API instance
 
 def create_app():
     app = Flask(__name__)
@@ -23,5 +24,8 @@ def create_app():
     # Import and register blueprints
     app.register_blueprint(webhook_blueprint, url_prefix="/webhook")
     app.register_blueprint(ui_blueprint)
+
+    # Register Flask-RESTX API with the app
+    api.init_app(app)
 
     return app, celery

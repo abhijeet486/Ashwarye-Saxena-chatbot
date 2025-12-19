@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebLLM - Browser-Based AI Chat</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .webllm-container {
+            width: 100%;
+            max-width: 1000px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .webllm-sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .webllm-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .model-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .model-option {
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .model-option:hover {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        .model-option.active {
+            background: #667eea;
+            border-color: #667eea;
+            font-weight: 600;
+        }
+
+        .config-group {
+            margin-bottom: 20px;
+        }
+
+        .config-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            opacity: 0.8;
+            display: block;
+        }
+
+        .config-input,
+        .config-select {
+            width: 100%;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .config-input:focus,
+        .config-select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .config-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .config-select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 15px;
+            color: #4caf50;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .webllm-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .user .message-avatar {
+            background: #667eea;
+            color: white;
+        }
+
+        .bot .message-avatar {
+            background: #764ba2;
+            color: white;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .user .message-bubble {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        .loading-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.5; transform: translateY(0); }
+            30% { opacity: 1; transform: translateY(-10px); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            resize: none;
+            max-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            padding: 10px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .send-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        .send-btn.loading {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .metrics-panel {
+            padding: 15px;
+            background: #f0f0f0;
+            border-top: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            font-size: 12px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+            gap: 15px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .webllm-container {
+                flex-direction: column;
+            }
+
+            .webllm-sidebar {
+                width: 100%;
+                max-height: 200px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .metrics-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .error-message {
+            padding: 12px 16px;
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            border-radius: 8px;
+            color: #c62828;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .success-message {
+            padding: 12px 16px;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            color: #2e7d32;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .webllm-sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="webllm-container">
+        <!-- Sidebar -->
+        <div class="webllm-sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-brain"></i>
+                <h2>WebLLM</h2>
+            </div>
+
+            <!-- Model Selection -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Model</div>
+                <div class="model-selector" id="modelSelector">
+                    <!-- Models populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Configuration -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Configuration</div>
+                
+                <div class="config-group">
+                    <label class="config-label">Temperature</label>
+                    <input type="range" class="config-input" id="temperatureSlider" 
+                           min="0" max="2" step="0.1" value="0.7">
+                    <span style="font-size: 11px; opacity: 0.6;" id="tempValue">0.7</span>
+                </div>
+
+                <div class="config-group">
+                    <label class="config-label">Max Tokens</label>
+                    <input type="number" class="config-input" id="maxTokens" 
+                           min="1" max="2048" value="512">
+                </div>
+
+                <div class="config-group">
+                    <label class="config-label">Top P</label>
+                    <input type="number" class="config-input" id="topP" 
+                           min="0" max="1" step="0.1" value="0.9">
+                </div>
+
+                <div class="config-group">
+                    <label class="config-label">Inference Mode</label>
+                    <select class="config-select" id="inferenceMode">
+                        <option value="client_side">Client-Side</option>
+                        <option value="server_side">Server-Side</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Status</div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span id="statusText">Ready</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Actions</div>
+                <button style="width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.3s ease;" 
+                        onclick="clearChat()" id="clearBtn">
+                    <i class="fas fa-trash"></i> Clear Chat
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="webllm-main">
+            <!-- Header -->
+            <div class="webllm-header">
+                <div class="header-title">
+                    <i class="fas fa-comments"></i>
+                    <h1>WebLLM Chat</h1>
+                    <span style="font-size: 12px; opacity: 0.8;">Browser-based AI</span>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="showMetrics()">
+                        <i class="fas fa-chart-line"></i> Metrics
+                    </button>
+                    <button class="header-btn" onclick="showHelp()">
+                        <i class="fas fa-question-circle"></i> Help
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="empty-state-text">
+                        <strong>Welcome to WebLLM Chat</strong><br>
+                        Start a conversation with the AI running in your browser.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <textarea class="chat-input" id="messageInput" placeholder="Type your message..." 
+                              rows="1"></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metrics Panel -->
+            <div class="metrics-panel" id="metricsPanel" style="display: none;">
+                <div class="metric-card">
+                    <div class="metric-label">Total Messages</div>
+                    <div class="metric-value" id="totalMessages">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg Response Time</div>
+                    <div class="metric-value" id="avgResponseTime">0ms</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Tokens</div>
+                    <div class="metric-value" id="totalTokens">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Client-Side</div>
+                    <div class="metric-value" id="clientSideCount">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const API_BASE = '/webllm/api';
+        let chatHistory = [];
+        let currentModel = null;
+        let isLoading = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadModels();
+            setupEventListeners();
+            loadChatHistory();
+        });
+
+        // Load available models
+        async function loadModels() {
+            try {
+                const response = await fetch(`${API_BASE}/models?recommended=true`);
+                const data = await response.json();
+                
+                const modelSelector = document.getElementById('modelSelector');
+                modelSelector.innerHTML = '';
+                
+                data.models.forEach((model, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = `model-option ${index === 0 ? 'active' : ''}`;
+                    btn.textContent = model.model_id.split('/').pop();
+                    btn.onclick = () => selectModel(model.model_id, btn);
+                    modelSelector.appendChild(btn);
+                    
+                    if (index === 0) {
+                        currentModel = model.model_id;
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading models:', error);
+                updateStatus('Error loading models', 'error');
+            }
+        }
+
+        // Select a model
+        function selectModel(modelId, button) {
+            currentModel = modelId;
+            document.querySelectorAll('.model-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+            updateStatus(`Model: ${modelId.split('/').pop()}`, 'success');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const input = document.getElementById('messageInput');
+            const tempSlider = document.getElementById('temperatureSlider');
+            
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            input.addEventListener('input', () => {
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+            });
+
+            tempSlider.addEventListener('input', (e) => {
+                document.getElementById('tempValue').textContent = e.target.value;
+            });
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            isLoading = true;
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.classList.add('loading');
+            sendBtn.disabled = true;
+
+            try {
+                // Remove empty state
+                const emptyState = document.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                // Add user message
+                addMessage(message, 'user');
+                input.value = '';
+                input.style.height = 'auto';
+
+                // Show loading
+                const loadingId = addLoadingMessage();
+
+                // Get configuration
+                const config = {
+                    temperature: parseFloat(document.getElementById('temperatureSlider').value),
+                    max_tokens: parseInt(document.getElementById('maxTokens').value),
+                    top_p: parseFloat(document.getElementById('topP').value),
+                    mode: document.getElementById('inferenceMode').value
+                };
+
+                // Send inference request
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/infer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: message,
+                        model_id: currentModel,
+                        ...config
+                    })
+                });
+
+                const data = await response.json();
+                const inferenceTime = Date.now() - startTime;
+
+                // Remove loading message
+                removeLoadingMessage(loadingId);
+
+                if (response.ok) {
+                    addMessage(data.text, 'bot', {
+                        time: inferenceTime,
+                        tokens: data.tokens_generated,
+                        mode: data.mode
+                    });
+                    updateStatus('Response received', 'success');
+                } else {
+                    addMessage(`Error: ${data.error}`, 'error');
+                    updateStatus('Error occurred', 'error');
+                }
+
+                // Store chat history
+                saveChatHistory();
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                addMessage(`Error: ${error.message}`, 'error');
+                updateStatus('Connection error', 'error');
+            } finally {
+                isLoading = false;
+                sendBtn.classList.remove('loading');
+                sendBtn.disabled = false;
+                document.getElementById('messageInput').focus();
+            }
+        }
+
+        // Add message to chat
+        function addMessage(text, sender, metadata = {}) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            let content = `
+                <div class="message-avatar">
+                    <i class="fas fa-${sender === 'user' ? 'user' : sender === 'error' ? 'exclamation-circle' : 'robot'}"></i>
+                </div>
+                <div>
+                    <div class="message-bubble">${escapeHtml(text)}</div>
+                    <div class="message-time">${timeStr}`;
+
+            if (metadata.time) {
+                content += ` • ${metadata.time}ms`;
+            }
+            if (metadata.tokens) {
+                content += ` • ${metadata.tokens} tokens`;
+            }
+
+            content += `</div></div>`;
+
+            messageEl.innerHTML = content;
+            chatMessages.appendChild(messageEl);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            chatHistory.push({
+                text,
+                sender,
+                timestamp: timeStr,
+                metadata
+            });
+        }
+
+        // Add loading message
+        function addLoadingMessage() {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message bot';
+            messageEl.id = `loading-${Date.now()}`;
+            messageEl.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="loading-message">
+                    <span>Thinking</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(messageEl);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return messageEl.id;
+        }
+
+        // Remove loading message
+        function removeLoadingMessage(loadingId) {
+            const el = document.getElementById(loadingId);
+            if (el) el.remove();
+        }
+
+        // Update status
+        function updateStatus(text, type = 'info') {
+            const statusEl = document.getElementById('statusText');
+            statusEl.textContent = text;
+            statusEl.parentElement.style.borderColor = 
+                type === 'error' ? 'rgba(244, 67, 54, 0.5)' :
+                type === 'success' ? 'rgba(76, 175, 80, 0.5)' :
+                'rgba(102, 126, 234, 0.5)';
+        }
+
+        // Show metrics
+        async function showMetrics() {
+            try {
+                const response = await fetch(`${API_BASE}/metrics`);
+                const data = await response.json();
+                
+                document.getElementById('totalMessages').textContent = chatHistory.length;
+                document.getElementById('avgResponseTime').textContent = 
+                    data.metrics.average_inference_time.toFixed(0) + 'ms';
+                document.getElementById('totalTokens').textContent = data.metrics.total_tokens;
+                document.getElementById('clientSideCount').textContent = data.metrics.client_side_count;
+
+                const panel = document.getElementById('metricsPanel');
+                panel.style.display = panel.style.display === 'none' ? 'grid' : 'none';
+            } catch (error) {
+                console.error('Error fetching metrics:', error);
+            }
+        }
+
+        // Clear chat
+        async function clearChat() {
+            if (confirm('Clear all messages?')) {
+                try {
+                    await fetch(`${API_BASE}/clear`, { method: 'POST' });
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="empty-state-text">
+                                <strong>Chat cleared</strong><br>
+                                Start a new conversation.
+                            </div>
+                        </div>
+                    `;
+                    chatHistory = [];
+                    localStorage.removeItem('webllm_chat_history');
+                    updateStatus('Chat cleared', 'success');
+                } catch (error) {
+                    console.error('Error clearing chat:', error);
+                }
+            }
+        }
+
+        // Show help
+        function showHelp() {
+            alert(`WebLLM Chat Help
+
+• Models: Select from browser-compatible models
+• Temperature: 0=deterministic, 2=creative
+• Max Tokens: Maximum response length
+• Mode: Client-side runs in browser, Server-side on server
+• Metrics: View performance statistics
+
+Keyboard Shortcuts:
+• Enter: Send message
+• Shift+Enter: New line
+• Ctrl+L: Clear chat
+
+Tips:
+• Clear browser cache if model fails to load
+• Larger models need more VRAM (6-10GB GPU recommended)
+• Client-side inference is private (runs in your browser)
+            `);
+        }
+
+        // Save and load chat history
+        function saveChatHistory() {
+            localStorage.setItem('webllm_chat_history', JSON.stringify(chatHistory));
+        }
+
+        function loadChatHistory() {
+            const saved = localStorage.getItem('webllm_chat_history');
+            if (saved) {
+                try {
+                    chatHistory = JSON.parse(saved);
+                    const chatMessages = document.getElementById('chatMessages');
+                    if (chatHistory.length > 0) {
+                        chatMessages.innerHTML = '';
+                        chatHistory.forEach(msg => {
+                            const messageEl = document.createElement('div');
+                            messageEl.className = `message ${msg.sender}`;
+                            messageEl.innerHTML = `
+                                <div class="message-avatar">
+                                    <i class="fas fa-${msg.sender === 'user' ? 'user' : 'robot'}"></i>
+                                </div>
+                                <div>
+                                    <div class="message-bubble">${escapeHtml(msg.text)}</div>
+                                    <div class="message-time">${msg.timestamp}</div>
+                                </div>
+                            `;
+                            chatMessages.appendChild(messageEl);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading chat history:', error);
+                }
+            }
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>

@@ -19,7 +19,7 @@ import json
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 import sys
 import os
 
@@ -46,8 +46,12 @@ class TestWebLLMWorkflow(unittest.TestCase):
         # Clear data before each test
         self.client.post('/webllm/api/clear', content_type='application/json')
     
-    def test_simple_chat_flow(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_simple_chat_flow(self, mock_llm):
         """Test simple chat message flow"""
+        # Mock LLM response
+        mock_llm.return_value = ("Machine learning is a subset of AI that enables systems to learn from data.", 12, 200.0)
+        
         # 1. Get available models
         models_resp = self.client.get('/webllm/api/models')
         self.assertEqual(models_resp.status_code, 200)
@@ -66,6 +70,7 @@ class TestWebLLMWorkflow(unittest.TestCase):
         result = json.loads(infer_resp.data)
         self.assertIn('request_id', result)
         self.assertIn('text', result)
+        self.assertTrue(len(result['text']) > 0)
         
         # 3. Get history
         history_resp = self.client.get('/webllm/api/history')
@@ -79,8 +84,12 @@ class TestWebLLMWorkflow(unittest.TestCase):
         metrics = json.loads(metrics_resp.data)
         self.assertEqual(metrics['metrics']['total_inferences'], 1)
     
-    def test_multi_turn_conversation(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_multi_turn_conversation(self, mock_llm):
         """Test multiple turn conversation"""
+        # Mock LLM responses
+        mock_llm.return_value = ("This is a helpful response.", 5, 150.0)
+        
         prompts = [
             'What is Python?',
             'How do I install it?',
@@ -100,8 +109,12 @@ class TestWebLLMWorkflow(unittest.TestCase):
         history = json.loads(history_resp.data)
         self.assertEqual(history['count'], 4)
     
-    def test_configuration_changes_during_chat(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_configuration_changes_during_chat(self, mock_llm):
         """Test changing configuration between requests"""
+        # Mock LLM response
+        mock_llm.return_value = ("Response text.", 5, 150.0)
+        
         # First request with default temperature
         resp1 = self.client.post('/webllm/api/infer',
             json={
@@ -135,8 +148,12 @@ class TestWebLLMWorkflow(unittest.TestCase):
         )
         self.assertEqual(resp2.status_code, 200)
     
-    def test_inference_mode_switching(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_inference_mode_switching(self, mock_llm):
         """Test switching between inference modes"""
+        # Mock LLM response
+        mock_llm.return_value = ("Mode test response.", 4, 150.0)
+        
         modes = [
             InferenceMode.CLIENT_SIDE.value,
             InferenceMode.SERVER_SIDE.value,
@@ -156,8 +173,12 @@ class TestWebLLMWorkflow(unittest.TestCase):
             data = json.loads(response.data)
             self.assertEqual(data['mode'], mode)
     
-    def test_batch_and_sequential_mix(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_batch_and_sequential_mix(self, mock_llm):
         """Test mixing batch and sequential inference"""
+        # Mock LLM response
+        mock_llm.return_value = ("Mixed test response.", 4, 150.0)
+        
         # Sequential requests
         for i in range(3):
             resp = self.client.post('/webllm/api/infer',
@@ -278,8 +299,12 @@ class TestWebLLMPerformance(unittest.TestCase):
         # Clear data before each test
         self.client.post('/webllm/api/clear', content_type='application/json')
     
-    def test_sequential_requests_performance(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_sequential_requests_performance(self, mock_llm):
         """Test performance of sequential requests"""
+        # Mock LLM response
+        mock_llm.return_value = ("Perf test response.", 4, 100.0)
+        
         num_requests = 10
         times = []
         
@@ -302,8 +327,12 @@ class TestWebLLMPerformance(unittest.TestCase):
         metrics = json.loads(metrics_resp.data)
         self.assertEqual(metrics['metrics']['total_inferences'], num_requests)
     
-    def test_batch_vs_sequential_efficiency(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_batch_vs_sequential_efficiency(self, mock_llm):
         """Test batch inference vs sequential performance"""
+        # Mock LLM response
+        mock_llm.return_value = ("Efficiency test response.", 5, 100.0)
+        
         prompts = [f'Prompt {i}' for i in range(10)]
         
         # Batch inference
@@ -330,8 +359,12 @@ class TestWebLLMPerformance(unittest.TestCase):
         # Batch should be reasonably comparable (might be faster)
         self.assertGreater(seq_time, batch_time * 0.5)
     
-    def test_concurrent_requests(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_concurrent_requests(self, mock_llm):
         """Test handling concurrent requests"""
+        # Mock LLM response
+        mock_llm.return_value = ("Concurrent response.", 4, 100.0)
+        
         num_concurrent = 5
         
         def make_request(i):
@@ -354,8 +387,12 @@ class TestWebLLMPerformance(unittest.TestCase):
         metrics = json.loads(metrics_resp.data)
         self.assertEqual(metrics['metrics']['total_inferences'], num_concurrent)
     
-    def test_response_time_metrics(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_response_time_metrics(self, mock_llm):
         """Test response time metrics tracking"""
+        # Mock LLM response
+        mock_llm.return_value = ("Metrics test response.", 5, 150.0)
+        
         # Send several requests
         for i in range(5):
             self.client.post('/webllm/api/infer',
@@ -370,8 +407,12 @@ class TestWebLLMPerformance(unittest.TestCase):
         self.assertGreater(metrics['metrics']['average_inference_time'], 0)
         self.assertGreater(metrics['metrics']['total_time_ms'], 0)
     
-    def test_memory_efficiency_with_history(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_memory_efficiency_with_history(self, mock_llm):
         """Test memory efficiency with large history"""
+        # Mock LLM response
+        mock_llm.return_value = ("Memory test response.", 4, 100.0)
+        
         # Generate history
         for i in range(50):
             self.client.post('/webllm/api/infer',
@@ -403,8 +444,12 @@ class TestWebLLMStress(unittest.TestCase):
         # Clear data before each test
         self.client.post('/webllm/api/clear', content_type='application/json')
     
-    def test_high_volume_requests(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_high_volume_requests(self, mock_llm):
         """Test handling high volume of requests"""
+        # Mock LLM response
+        mock_llm.return_value = ("Volume response.", 3, 80.0)
+        
         num_requests = 50
         success_count = 0
         
@@ -420,8 +465,12 @@ class TestWebLLMStress(unittest.TestCase):
         success_rate = success_count / num_requests
         self.assertGreater(success_rate, 0.9)
     
-    def test_maximum_batch_size(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_maximum_batch_size(self, mock_llm):
         """Test with maximum batch size"""
+        # Mock LLM response
+        mock_llm.return_value = ("Batch size response.", 4, 80.0)
+        
         # Create 100 prompts (max allowed)
         prompts = [f'Prompt {i}' for i in range(100)]
         
@@ -434,8 +483,12 @@ class TestWebLLMStress(unittest.TestCase):
         data = json.loads(response.data)
         self.assertEqual(data['total_prompts'], 100)
     
-    def test_maximum_prompt_length(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_maximum_prompt_length(self, mock_llm):
         """Test with maximum prompt length"""
+        # Mock LLM response
+        mock_llm.return_value = ("Max length response.", 4, 120.0)
+        
         # Create 2000 character prompt (max allowed)
         long_prompt = 'a' * 2000
         
@@ -446,8 +499,12 @@ class TestWebLLMStress(unittest.TestCase):
         
         self.assertEqual(response.status_code, 200)
     
-    def test_sustained_load(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_sustained_load(self, mock_llm):
         """Test sustained load over time"""
+        # Mock LLM response
+        mock_llm.return_value = ("Load test response.", 4, 50.0)
+        
         duration_seconds = 5
         requests_made = 0
         start_time = time.time()

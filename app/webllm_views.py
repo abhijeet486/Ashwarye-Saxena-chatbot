@@ -12,6 +12,7 @@ import time
 from flask import Blueprint, render_template, request, jsonify, session
 from datetime import datetime
 import os
+import requests
 
 from app.services.webllm_service import (
     WebLLMManager,
@@ -29,6 +30,105 @@ logger = logging.getLogger(__name__)
 
 # Initialize WebLLM manager
 manager = get_webllm_manager()
+
+# LLM Service Configuration
+LLM_SERVICE_URL = os.getenv('LLM_SERVICE_URL', 'http://127.0.0.1:5000/query/')
+OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL', 'http://127.0.0.1:11434')
+OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'llama3')
+OLLAMA_CHAT_ENDPOINT = f"{OLLAMA_BASE_URL}/api/chat"
+
+
+def get_llm_response(prompt: str, temperature: float = 0.7, max_tokens: int = 512) -> tuple:
+    """
+    Get response from actual LLM service.
+    
+    Returns: (response_text, tokens_used, inference_time_ms)
+    """
+    try:
+        # Try Ollama first (local inference)
+        start_time = time.time()
+        
+        ollama_payload = {
+            "model": OLLAMA_MODEL,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful AI assistant. Provide concise, informative responses."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "stream": False,
+            "options": {
+                "temperature": temperature,
+                "top_p": 0.9,
+                "num_predict": max_tokens
+            }
+        }
+        
+        response = requests.post(
+            OLLAMA_CHAT_ENDPOINT,
+            json=ollama_payload,
+            timeout=120
+        )
+        
+        inference_time = (time.time() - start_time) * 1000  # Convert to ms
+        
+        if response.status_code == 200:
+            result = response.json()
+            response_text = result.get('message', {}).get('content', '').strip()
+            
+            # Estimate token count (rough approximation: 1 token ≈ 4 characters)
+            tokens_used = len(response_text.split()) * 1.3
+            
+            logger.info(f"Ollama inference successful: {len(response_text)} chars in {inference_time:.1f}ms")
+            return response_text, int(tokens_used), inference_time
+        else:
+            logger.warning(f"Ollama returned status {response.status_code}")
+            
+    except requests.exceptions.Timeout:
+        logger.warning("Ollama request timed out")
+    except requests.exceptions.ConnectionError:
+        logger.warning(f"Could not connect to Ollama at {OLLAMA_CHAT_ENDPOINT}")
+    except Exception as e:
+        logger.warning(f"Error calling Ollama: {e}")
+    
+    # Fallback to main LLM service
+    try:
+        start_time = time.time()
+        
+        json_message = {
+            "query": prompt,
+            "message_history": [],
+            "query_type": "general"
+        }
+        
+        response = requests.post(
+            LLM_SERVICE_URL,
+            data=json.dumps(json_message),
+            headers={'Content-Type': 'application/json'},
+            timeout=120
+        )
+        
+        inference_time = (time.time() - start_time) * 1000
+        
+        if response.status_code == 200:
+            response_data = response.json()
+            response_text = response_data.get('response', '').strip()
+            tokens_used = len(response_text.split()) * 1.3
+            
+            logger.info(f"Main LLM service inference successful: {len(response_text)} chars in {inference_time:.1f}ms")
+            return response_text, int(tokens_used), inference_time
+            
+    except Exception as e:
+        logger.warning(f"Main LLM service failed: {e}")
+    
+    # Fallback response if all services fail
+    logger.warning("All LLM services failed, using fallback response")
+    fallback_text = "I apologize, but I'm unable to connect to the AI service at the moment. Please try again later or contact support."
+    return fallback_text, 15, 0
 
 
 @webllm_blueprint.route("/", methods=["GET"])
@@ -94,7 +194,7 @@ def get_model_info():
 @webllm_blueprint.route("/api/infer", methods=["POST"])
 def run_inference():
     """
-    Run inference on the browser.
+    Run inference with actual LLM service.
     
     Expected JSON:
     {
@@ -127,13 +227,20 @@ def run_inference():
         if not valid:
             return jsonify({"error": error_msg}), 400
         
-        # Create response (simulated for testing)
+        # Get actual LLM response
+        response_text, tokens_generated, inference_time = get_llm_response(
+            prompt=inf_request.prompt,
+            temperature=inf_request.temperature or WebLLMConfig.DEFAULT_TEMPERATURE,
+            max_tokens=inf_request.max_tokens or WebLLMConfig.DEFAULT_MAX_TOKENS
+        )
+        
+        # Create response with actual data
         request_id = str(uuid.uuid4())
         response = InferenceResponse(
             request_id=request_id,
-            text=f"Response to: {inf_request.prompt[:50]}...",
-            tokens_generated=50,
-            inference_time_ms=150.5,
+            text=response_text,
+            tokens_generated=tokens_generated,
+            inference_time_ms=inference_time,
             mode=inf_request.mode,
             model_id=inf_request.model_id
         )
@@ -159,7 +266,7 @@ def run_inference():
 @webllm_blueprint.route("/api/infer/batch", methods=["POST"])
 def batch_inference():
     """
-    Run batch inference on multiple prompts
+    Run batch inference on multiple prompts with actual LLM service
     
     Expected JSON:
     {
@@ -182,17 +289,20 @@ def batch_inference():
             return jsonify({"error": "Maximum 100 prompts per batch"}), 400
         
         model_id = data.get("model_id", WebLLMConfig.DEFAULT_MODEL)
-        temperature = data.get("temperature")
+        temperature = data.get("temperature", WebLLMConfig.DEFAULT_TEMPERATURE)
+        max_tokens = data.get("max_tokens", WebLLMConfig.DEFAULT_MAX_TOKENS)
         
         results = []
         total_time = 0
         total_tokens = 0
+        successful_count = 0
         
         for prompt in prompts:
             inf_request = InferenceRequest(
                 prompt=prompt,
                 model_id=model_id,
-                temperature=temperature
+                temperature=temperature,
+                max_tokens=max_tokens
             )
             
             valid, error_msg = manager.validate_inference_request(inf_request)
@@ -203,36 +313,49 @@ def batch_inference():
                 })
                 continue
             
-            # Simulated inference
-            request_id = str(uuid.uuid4())
-            inference_time = 100 + len(prompt) * 0.5
-            tokens = len(prompt.split()) * 2
-            
-            response = InferenceResponse(
-                request_id=request_id,
-                text=f"Response to: {prompt[:50]}...",
-                tokens_generated=tokens,
-                inference_time_ms=inference_time,
-                mode=InferenceMode.CLIENT_SIDE.value,
-                model_id=model_id
-            )
-            
-            manager.record_inference(response)
-            
-            total_time += inference_time
-            total_tokens += tokens
-            
-            results.append({
-                "request_id": response.request_id,
-                "text": response.text,
-                "tokens_generated": response.tokens_generated,
-                "inference_time_ms": response.inference_time_ms
-            })
+            # Get actual LLM response
+            try:
+                response_text, tokens, inference_time = get_llm_response(
+                    prompt=prompt,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                )
+                
+                request_id = str(uuid.uuid4())
+                
+                response = InferenceResponse(
+                    request_id=request_id,
+                    text=response_text,
+                    tokens_generated=tokens,
+                    inference_time_ms=inference_time,
+                    mode=InferenceMode.CLIENT_SIDE.value,
+                    model_id=model_id
+                )
+                
+                manager.record_inference(response)
+                
+                total_time += inference_time
+                total_tokens += tokens
+                successful_count += 1
+                
+                results.append({
+                    "request_id": response.request_id,
+                    "text": response.text,
+                    "tokens_generated": response.tokens_generated,
+                    "inference_time_ms": response.inference_time_ms
+                })
+                
+            except Exception as e:
+                logger.error(f"Error processing prompt in batch: {e}")
+                results.append({
+                    "error": str(e),
+                    "prompt": prompt
+                })
         
         return jsonify({
             "results": results,
             "total_prompts": len(prompts),
-            "successful": len(results),
+            "successful": successful_count,
             "total_time_ms": total_time,
             "total_tokens": total_tokens
         }), 200

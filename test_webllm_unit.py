@@ -415,8 +415,12 @@ class TestWebLLMAPIEndpoints(unittest.TestCase):
         response = self.client.get('/webllm/api/models/info?model=invalid_model')
         self.assertEqual(response.status_code, 404)
     
-    def test_inference_endpoint_valid(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_inference_endpoint_valid(self, mock_llm):
         """Test inference endpoint with valid input"""
+        # Mock the LLM response
+        mock_llm.return_value = ("This is an AI response about artificial intelligence.", 10, 150.0)
+        
         response = self.client.post('/webllm/api/infer',
             json={
                 'prompt': 'What is AI?',
@@ -430,6 +434,7 @@ class TestWebLLMAPIEndpoints(unittest.TestCase):
         self.assertIn('request_id', data)
         self.assertIn('text', data)
         self.assertIn('inference_time_ms', data)
+        self.assertEqual(data['text'], "This is an AI response about artificial intelligence.")
     
     def test_inference_endpoint_missing_prompt(self):
         """Test inference endpoint with missing prompt"""
@@ -454,8 +459,12 @@ class TestWebLLMAPIEndpoints(unittest.TestCase):
         
         self.assertEqual(response.status_code, 400)
     
-    def test_batch_inference_endpoint(self):
+    @patch('app.webllm_views.get_llm_response')
+    def test_batch_inference_endpoint(self, mock_llm):
         """Test batch inference endpoint"""
+        # Mock the LLM response
+        mock_llm.return_value = ("Test response from LLM", 5, 100.0)
+        
         response = self.client.post('/webllm/api/infer/batch',
             json={
                 'prompts': ['Prompt 1', 'Prompt 2', 'Prompt 3'],
@@ -467,7 +476,7 @@ class TestWebLLMAPIEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['total_prompts'], 3)
-        self.assertEqual(len(data['results']), 3)
+        self.assertEqual(data['successful'], 3)
     
     def test_batch_inference_too_many_prompts(self):
         """Test batch inference with too many prompts"""

@@ -25,3 +25,4 @@ ragllmtrytest-e3bb2e1e3ce4.json
 get_unstr_query2.py
 venv/
 *.pyc
+.env.webllm

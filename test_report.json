@@ -1,0 +1,18 @@
+{
+  "timestamp": 1766140155.525033,
+  "environment": {
+    "FLASK_ENV": "testing",
+    "USE_ENHANCED_MODE": null,
+    "OLLAMA_BASE_URL": null,
+    "OLLAMA_MODEL": null
+  },
+  "results": {
+    "integration": {
+      "tests_run": 18,
+      "failures": 8,
+      "errors": 1,
+      "time": 0.33881497383117676,
+      "success_rate": 0.5
+    }
+  }
+}

@@ -1,0 +1,22 @@
+✅ OpenAPI/Swagger documentation configured
+📚 Interactive API docs available at: http://localhost:8000/docs
+🔧 OpenAPI spec available at: http://localhost:8000/api/spec
+2025-12-19 10:42:24,086 - root - INFO - Flask app started
+ * Serving Flask app 'app'
+ * Debug mode: off
+2025-12-19 10:42:24,091 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.16.88.3:8000
+2025-12-19 10:42:24,092 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-19 10:42:43,193 - werkzeug - INFO - 127.0.0.1 - - [19/Dec/2025 10:42:43] "GET /docs HTTP/1.1" 200 -
+2025-12-19 10:42:55,891 - werkzeug - INFO - 127.0.0.1 - - [19/Dec/2025 10:42:55] "[33mGET /api/spec HTTP/1.1[0m" 404 -
+2025-12-19 10:43:08,138 - root - WARNING - Ollama availability check failed: HTTPConnectionPool(host='127.0.0.1', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fdfc80b8e60>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-12-19 10:43:08,138 - werkzeug - INFO - 127.0.0.1 - - [19/Dec/2025 10:43:08] "GET /api/health HTTP/1.1" 200 -
+2025-12-19 10:43:21,453 - werkzeug - INFO - 127.0.0.1 - - [19/Dec/2025 10:43:21] "GET /api/ HTTP/1.1" 200 -
+2025-12-19 10:44:24,413 - root - WARNING - Ollama availability check failed: HTTPConnectionPool(host='127.0.0.1', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fdfc80975c0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-12-19 10:44:24,413 - root - INFO - Using demo fallback response
+2025-12-19 10:44:24,415 - werkzeug - INFO - 127.0.0.1 - - [19/Dec/2025 10:44:24] "POST /api/chat/send HTTP/1.1" 200 -
+2025-12-19 10:44:45,602 - werkzeug - INFO - 127.0.0.1 - - [19/Dec/2025 10:44:45] "GET /api/service/ollama/setup HTTP/1.1" 200 -
+2025-12-19 10:44:58,475 - root - WARNING - Ollama availability check failed: HTTPConnectionPool(host='127.0.0.1', port=11434): Max retries exceeded with url: /api/tags (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fdfc80b8bc0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-12-19 10:44:58,476 - werkzeug - INFO - 127.0.0.1 - - [19/Dec/2025 10:44:58] "[35m[1mPOST /api/mode/enhanced HTTP/1.1[0m" 503 -

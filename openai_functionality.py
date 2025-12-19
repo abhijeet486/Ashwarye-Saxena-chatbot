@@ -33,9 +33,15 @@ os.environ["ANTHROPIC_API_KEY"] = os.getenv("ANTHROPIC_API_KEY")
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Configure CUDA
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
-torch.cuda.set_device(2)
-torch.cuda.empty_cache()
+if torch.cuda.is_available():
+    device = torch.device('cuda:0')  # Use first available GPU
+    try:
+        torch.cuda.set_device(0)
+        torch.cuda.empty_cache()
+    except:
+        device = torch.device('cpu')
+else:
+    device = torch.device('cpu')
 
 embeddings = SentenceTransformerEmbeddings(model_name="BAAI/bge-m3")
 

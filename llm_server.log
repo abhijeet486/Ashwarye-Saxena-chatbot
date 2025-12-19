@@ -1,4 +1,3 @@
-nohup: ignoring input
 /home/engine/project/openai_functionality.py:6: DeprecationWarning: 
 Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
 (to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
